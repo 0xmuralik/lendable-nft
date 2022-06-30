@@ -1,5 +1,5 @@
 from brownie import Lend, SimpleCollectible
-from scripts.utils import get_account, encode_function_signature, decode_result
+from scripts.utils import get_account, encode_function_signature, decode_to_int
 
 
 # def main():
@@ -69,7 +69,7 @@ def call_on_nft(token_id):
     success, result = call_tx.return_value
     if not success:
         print("Call on nft source failed!!!!!!!!!!!!!!")
-    return decode_result(result[1:])
+    return decode_to_int(result[1:])
     # return result
 
 
