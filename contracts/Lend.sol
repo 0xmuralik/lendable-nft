@@ -16,8 +16,10 @@ contract Lend is IERC721Receiver {
         public
         returns (uint256)
     {
-        require(ERC721(NFTContract).ownerOf(sourceTokenId) == msg.sender);
-        require(isContract(NFTContract));
+        require(
+            ERC721(NFTContract).ownerOf(sourceTokenId) == msg.sender &&
+                isContract(NFTContract)
+        );
         ERC721(NFTContract).safeTransferFrom(
             msg.sender,
             address(this),
@@ -70,7 +72,11 @@ contract Lend is IERC721Receiver {
         } else {
             require(msg.sender == tokenToLender[tokenId]);
         }
-        return tokenToContract[tokenId].call(signature);
+        (bool success, bytes memory result) = tokenToContract[tokenId].call(
+            signature
+        );
+        require(success);
+        return (success, result);
     }
 
     function isContract(address addr) public view returns (bool) {

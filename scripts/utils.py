@@ -48,3 +48,9 @@ def encode_function_signature(function, *args):
     for arg in args:
         signature = signature + arg.to_bytes(32, "big").hex()
     return signature
+
+
+def decode_to_int(data):
+    """Decode bytes data to int"""
+    # return data.decode("utf-8")
+    return int.from_bytes(data, "big")

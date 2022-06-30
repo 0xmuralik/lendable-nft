@@ -1,9 +1,9 @@
 from brownie import Lend, SimpleCollectible
-from scripts.utils import get_account, encode_function_signature
+from scripts.utils import get_account, encode_function_signature, decode_result
 
 
-def main():
-    """Entry"""
+# def main():
+#     """Entry"""
 
 
 def deploy():
@@ -11,6 +11,7 @@ def deploy():
     account = get_account()
     lend = Lend.deploy({"from": account})
     print(f"Contract deployed at {lend.address}")
+    return lend
 
 
 def approve(source_token_id):
@@ -35,8 +36,9 @@ def make_token_lendable(source_token_id):
     )
     make_lendable_tx.wait(1)
     print(
-        f"Token {source_token_id} made lendable. New token id is {lend.tokenCounter()-1} with owner as {account.address}"
+        f"Token {source_token_id} made lendable. New token id is {make_lendable_tx.return_value} with owner as {account.address}"
     )
+    return make_lendable_tx.return_value
 
 
 def borrow(token_id):
@@ -53,11 +55,22 @@ def call_on_nft(token_id):
     account = get_account(1)
     lend = Lend[-1]
     # set power
-    signature = encode_function_signature(
-        "setPower(uint256 tokenId, uint256 power)", 0, 100
-    )
+    signature = encode_function_signature("setPower(uint256,uint256)", 0, 100)
     call_tx = lend.callOnNFT(token_id, signature, {"from": account})
     call_tx.wait(1)
+    success, result = call_tx.return_value
+    if not success:
+        print("Call on nft source failed!!!!!!!!!!!!!!")
+
+    # get power
+    signature = encode_function_signature("powers(uint256)", 0)
+    call_tx = lend.callOnNFT(token_id, signature, {"from": account})
+    call_tx.wait(1)
+    success, result = call_tx.return_value
+    if not success:
+        print("Call on nft source failed!!!!!!!!!!!!!!")
+    return decode_result(result[1:])
+    # return result
 
 
 def return_borrowed(token_id):
@@ -74,3 +87,13 @@ def release_nft(token_id):
     lend = Lend[-1]
     release_nft_tx = lend.releaseNFT(token_id, {"from": account})
     release_nft_tx.wait(1)
+
+
+def get_token_data(token_id):
+    """Prints all the data regarding that token"""
+    lend = Lend[-1]
+    print(f"Token ID: {token_id}")
+    print(f"Token source id: {lend.tokenIdToSourceTokenId(token_id)}")
+    print(f"Token source contract: {lend.tokenToContract(token_id)}")
+    print(f"Token owner: {lend.tokenToLender(token_id)}")
+    print(f"Token borowwer: {lend.tokenToBorrower(token_id)}")

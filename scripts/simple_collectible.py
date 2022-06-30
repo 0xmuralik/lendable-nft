@@ -6,11 +6,11 @@ SAMPLE_TOKEN_URI = "https://bafybeifql3m2pnx6tfbiemynmpd5c7uwxfed4f4krhkn7qll4gy
 OPENSEA_URL = "https://testnets.opensea.io/assets/{}/{}"
 
 
-def main():
-    """Entry"""
-    deploy()
-    create()
-    set_power(0, 100)
+# def main():
+#     """Entry"""
+#     deploy()
+#     create()
+#     set_power(0, 100)
 
 
 def deploy():
@@ -31,10 +31,11 @@ def create():
     create_tx.wait(1)
     if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
         print(
-            f"You can view your nft at {OPENSEA_URL.format(simple_collectible.address,simple_collectible.tokenCounter()-1)}"
+            f"You can view your nft at {OPENSEA_URL.format(simple_collectible.address,create_tx.return_value)}"
         )
     else:
         print("NFT is deployed")
+    return create_tx.return_value
 
 
 def set_power(token_id, power):
@@ -43,3 +44,4 @@ def set_power(token_id, power):
     simple_collectible = SimpleCollectible[-1]
     set_power_tx = simple_collectible.setPower(token_id, power, {"from": account})
     set_power_tx.wait(1)
+    return simple_collectible.powers(token_id)
