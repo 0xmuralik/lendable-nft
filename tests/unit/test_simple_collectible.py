@@ -29,3 +29,4 @@ def test_can_set_power():
     create()
     assert simple_collectible.ownerOf(0) == get_account()
     set_power(0, 100)
+    assert simple_collectible.powers(0) == 100

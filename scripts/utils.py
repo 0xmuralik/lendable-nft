@@ -1,4 +1,4 @@
-from brownie import accounts, network, config, Contract
+from brownie import accounts, network, config, Contract, web3
 
 LOCAL_BLOCKCHAIN_ENVIRONMENTS = ["development", "ganache"]
 OPENSEA_URL = "https://testnets.opensea.io/assets/{}/{}"
@@ -40,3 +40,11 @@ def deploy_mocks():
     # link_contract = LinkToken.deploy({"from": account})
     # VRFCoordinatorV2Mock.deploy(1000, 1000000, {"from": account})
     print("Mocks deployed")
+
+
+def encode_function_signature(function, *args):
+    """replicate abi.encodeFunctionSignature from solidity"""
+    signature = web3.keccak(text=function)[:4].hex()
+    for arg in args:
+        signature = signature + arg.to_bytes(32, "big").hex()
+    return signature
