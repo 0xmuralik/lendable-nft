@@ -14,6 +14,7 @@ contract SimpleCollectible is ERC721URIStorage, Ownable {
     }
 
     function setPower(uint256 tokenId, uint256 power) public {
+        require(ownerOf(tokenId) == msg.sender);
         powers[tokenId] = power;
     }
 
