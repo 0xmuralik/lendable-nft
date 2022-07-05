@@ -3,14 +3,18 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "../interfaces/IERC721Lend.sol";
 
-contract Lend is IERC721Receiver {
-    uint256 tokenCounter;
-    mapping(uint256 => address) public tokenToLender;
+contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
+    uint256 public tokenCounter;
     mapping(uint256 => address) public tokenToBorrower;
     mapping(uint256 => address) public tokenToContract;
     mapping(uint256 => uint256) public tokenIdToSourceTokenId;
+
+    constructor(string memory name_, string memory symbol_)
+        ERC721(name_, symbol_)
+    {}
 
     function makeLendable(address NFTContract, uint256 sourceTokenId)
         public
@@ -25,16 +29,18 @@ contract Lend is IERC721Receiver {
             address(this),
             sourceTokenId
         );
+        // mint new token as owner as msg.sender
+        _safeMint(msg.sender, tokenCounter);
+        _setTokenURI(tokenCounter, ERC721(NFTContract).tokenURI(sourceTokenId));
         tokenIdToSourceTokenId[tokenCounter] = sourceTokenId;
         tokenToContract[tokenCounter] = NFTContract;
-        tokenToLender[tokenCounter] = msg.sender;
         tokenCounter = tokenCounter + 1;
         return tokenCounter - 1;
     }
 
     function releaseNFT(uint256 tokenId) public {
         require(
-            tokenToLender[tokenId] == msg.sender &&
+            ownerOf(tokenId) == msg.sender &&
                 tokenToBorrower[tokenId] == address(0)
         );
         ERC721(tokenToContract[tokenId]).safeTransferFrom(
@@ -42,16 +48,21 @@ contract Lend is IERC721Receiver {
             msg.sender,
             tokenIdToSourceTokenId[tokenId]
         );
-        tokenToLender[tokenId] = address(0);
+        _burn(tokenId);
     }
 
-    function borrow(uint256 tokenID) public {
-        tokenToBorrower[tokenID] = msg.sender;
+    function borrow(uint256 tokenId) public {
+        require(_exists(tokenId));
+        tokenToBorrower[tokenId] = msg.sender;
     }
 
     function returnBorrowed(uint256 tokenId) public {
         require(tokenToBorrower[tokenId] == msg.sender);
         tokenToBorrower[tokenId] = address(0);
+    }
+
+    function borrowedBy(uint256 tokenId) public view returns (address) {
+        return tokenToBorrower[tokenId];
     }
 
     function onERC721Received(
@@ -70,7 +81,7 @@ contract Lend is IERC721Receiver {
         if (tokenToBorrower[tokenId] != address(0)) {
             require(msg.sender == tokenToBorrower[tokenId]);
         } else {
-            require(msg.sender == tokenToLender[tokenId]);
+            require(msg.sender == ownerOf(tokenId));
         }
         (bool success, bytes memory result) = tokenToContract[tokenId].call(
             signature
@@ -85,5 +96,18 @@ contract Lend is IERC721Receiver {
             size := extcodesize(addr)
         }
         return size > 0;
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override
+        returns (bool)
+    {
+        return
+            interfaceId == type(IERC721Lend).interfaceId ||
+            interfaceId == type(IERC721Receiver).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 }

@@ -2,7 +2,7 @@
 
 pragma solidity >0.8.0;
 
-interface ERC721Lend {
+interface IERC721Lend {
     function borrow(uint256 tokenId) external;
 
     function returnBorrowed(uint256 tokenId) external;
