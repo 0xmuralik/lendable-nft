@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../interfaces/IERC721Lend.sol";
 
 contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
@@ -16,24 +18,33 @@ contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
         ERC721(name_, symbol_)
     {}
 
-    function makeLendable(address NFTContract, uint256 sourceTokenId)
+    function makeLendable(address nftContract, uint256 sourceTokenId)
         public
         returns (uint256)
     {
         require(
-            ERC721(NFTContract).ownerOf(sourceTokenId) == msg.sender &&
-                isContract(NFTContract)
+            IERC721(nftContract).ownerOf(sourceTokenId) == msg.sender &&
+                isContract(nftContract)
         );
-        ERC721(NFTContract).safeTransferFrom(
+        IERC721(nftContract).safeTransferFrom(
             msg.sender,
             address(this),
             sourceTokenId
         );
         // mint new token as owner as msg.sender
         _safeMint(msg.sender, tokenCounter);
-        _setTokenURI(tokenCounter, ERC721(NFTContract).tokenURI(sourceTokenId));
+        if (
+            IERC721(nftContract).supportsInterface(
+                type(IERC721Metadata).interfaceId
+            )
+        ) {
+            _setTokenURI(
+                tokenCounter,
+                IERC721Metadata(nftContract).tokenURI(sourceTokenId)
+            );
+        }
         tokenIdToSourceTokenId[tokenCounter] = sourceTokenId;
-        tokenToContract[tokenCounter] = NFTContract;
+        tokenToContract[tokenCounter] = nftContract;
         tokenCounter = tokenCounter + 1;
         return tokenCounter - 1;
     }
@@ -43,7 +54,7 @@ contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
             ownerOf(tokenId) == msg.sender &&
                 tokenToBorrower[tokenId] == address(0)
         );
-        ERC721(tokenToContract[tokenId]).safeTransferFrom(
+        IERC721(tokenToContract[tokenId]).safeTransferFrom(
             address(this),
             msg.sender,
             tokenIdToSourceTokenId[tokenId]
