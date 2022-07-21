@@ -21,9 +21,8 @@ def deploy():
     return simple_collectible
 
 
-def create():
+def create(account):
     """Create NFT"""
-    account = get_account()
     simple_collectible = SimpleCollectible[-1]
     create_tx = simple_collectible.createCollectible(
         SAMPLE_TOKEN_URI, {"from": account}

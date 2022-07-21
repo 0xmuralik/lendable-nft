@@ -17,7 +17,7 @@ def test_can_create():
     if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
         pytest.skip()
     simple_collectible = deploy()
-    create()
+    create({"from": get_account()})
     assert simple_collectible.ownerOf(0) == get_account()
 
 

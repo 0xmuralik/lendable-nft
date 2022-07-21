@@ -23,7 +23,9 @@ def approve(source_token_id, account):
     )
     approve_tx.wait(1)
     # use getApproved(tokenId) to test
-    print(f"Token {source_token_id} approved for {lend.address}")
+    print(
+        f"Token {source_token_id} approved for {simple_collectible.getApproved(source_token_id)}"
+    )
 
 
 def make_token_lendable(source_token_id, account):
@@ -42,7 +44,7 @@ def make_token_lendable(source_token_id, account):
 def borrow(token_id, account):
     """Borrow NFT"""
     lend = Lend[-1]
-    borrow_tx = lend.borrow(token_id, {"from": account})
+    borrow_tx = lend.borrow(token_id, account, {"from": account})
     borrow_tx.wait(1)
     print(f"Token {token_id} borrowed by {account.address}")
 

@@ -27,7 +27,7 @@ contract Agreement {
         uint256 rent,
         uint256 intervalInDays,
         uint256 validityInDays
-    ) public {
+    ) public returns (uint256) {
         require(
             IERC721(contractAddress).supportsInterface(
                 type(IERC721Lend).interfaceId
@@ -38,14 +38,17 @@ contract Agreement {
         NFT memory nft = NFT(nftId, contractAddress);
         PARAMS memory params = PARAMS(
             rent,
-            intervalInDays * 1 days,
+            // intervalInDays * 1 days,
+            intervalInDays,
             0,
-            validityInDays * 1 days,
+            // validityInDays * 1 days,
+            validityInDays,
             false
         );
         agreementToNFT[counter] = nft;
         agreementToParams[counter] = params;
         counter++;
+        return counter - 1;
     }
 
     function borrow(uint256 agreementID) public payable {
