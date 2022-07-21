@@ -66,3 +66,15 @@ def return_borrowed(agreement_id, account):
     return_borrowed_tx.wait(1)
     lend = Lend[-1]
     print(f"Returned borrowed NFT. Current borrower {lend.borrowedBy(token_id)}")
+
+
+def get_params(agreement_id):
+    """Get params"""
+    agreement = Agreement[-1]
+    return agreement.agreementToParams(agreement_id)
+
+
+def get_nft(agreement_id):
+    """Get nft"""
+    agreement = Agreement[-1]
+    return agreement.agreementToNFT(agreement_id)
