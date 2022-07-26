@@ -67,7 +67,11 @@ contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
 
     function borrow(uint256 tokenId, address borrower) public {
         require(_exists(tokenId));
-        require(msg.sender == borrower || msg.sender == getApproved(tokenId));
+        require(
+            msg.sender == borrower ||
+                msg.sender == getLendApproved(tokenId) ||
+                isLendApprovedForAll(ownerOf(tokenId), msg.sender)
+        );
         require(tokenToBorrower[tokenId] == address(0));
         tokenToBorrower[tokenId] = borrower;
     }
@@ -76,7 +80,8 @@ contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
         // BUG: owner can change approved to return borrowed NFT anytime
         require(
             tokenToBorrower[tokenId] == msg.sender ||
-                msg.sender == getApproved(tokenId)
+                msg.sender == getLendApproved(tokenId) ||
+                isLendApprovedForAll(ownerOf(tokenId), msg.sender)
         );
         tokenToBorrower[tokenId] = address(0);
     }
