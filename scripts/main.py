@@ -41,7 +41,6 @@ def main():
     # return borrowed from agreement
     # BUG: In lend return borrowed
     agreement.return_borrowed(agreement_id, owner)
-    # lend.return_borrowed(token_id, borrower)
 
     # release NFT
     lend.release_nft(token_id, owner)

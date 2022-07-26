@@ -6,7 +6,7 @@ def test_can_make_lendable():
     """Test for making a token lendable"""
     nft_contract = simple_collectible.deploy()
     lend_contract = lend.deploy()
-    source_token_id = simple_collectible.create()
+    source_token_id = simple_collectible.create(utils.get_account())
     lend.approve(source_token_id, utils.get_account())
     lended_token_id = lend.make_token_lendable(source_token_id, utils.get_account())
     assert lend_contract.ownerOf(lended_token_id) == utils.get_account()

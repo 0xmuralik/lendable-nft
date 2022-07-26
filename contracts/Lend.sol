@@ -64,9 +64,7 @@ contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
 
     function borrow(uint256 tokenId, address borrower) public {
         require(_exists(tokenId));
-        require(
-            msg.sender == ownerOf(tokenId) || msg.sender == getApproved(tokenId)
-        );
+        require(msg.sender == borrower || msg.sender == getApproved(tokenId));
         require(tokenToBorrower[tokenId] == address(0));
         tokenToBorrower[tokenId] = borrower;
     }

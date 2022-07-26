@@ -17,7 +17,7 @@ def test_can_create():
     if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
         pytest.skip()
     simple_collectible = deploy()
-    create({"from": get_account()})
+    create(get_account())
     assert simple_collectible.ownerOf(0) == get_account()
 
 
@@ -26,7 +26,7 @@ def test_can_set_power():
     if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
         pytest.skip()
     simple_collectible = deploy()
-    create()
+    create(get_account())
     assert simple_collectible.ownerOf(0) == get_account()
     set_power(0, 100)
     assert simple_collectible.powers(0) == 100

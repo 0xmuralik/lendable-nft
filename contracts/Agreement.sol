@@ -96,4 +96,7 @@ contract Agreement {
         delete agreementToNFT[agreementID];
         delete agreementToParams[agreementID];
     }
+
+    // add change expiry to extend or reduce the agreement validity
+    // notice period
 }
