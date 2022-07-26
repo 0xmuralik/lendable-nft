@@ -14,6 +14,9 @@ contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
     mapping(uint256 => address) public tokenToContract;
     mapping(uint256 => uint256) public tokenIdToSourceTokenId;
 
+    mapping(uint256 => address) private tokenLendApprovals;
+    mapping(address => mapping(address => bool)) private operatorLendApprovals;
+
     constructor(string memory name_, string memory symbol_)
         ERC721(name_, symbol_)
     {}
@@ -126,5 +129,42 @@ contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
             interfaceId == type(IERC721Lend).interfaceId ||
             interfaceId == type(IERC721Receiver).interfaceId ||
             super.supportsInterface(interfaceId);
+    }
+
+    function approveLend(address to, uint256 tokenId) public {
+        address owner = ERC721.ownerOf(tokenId);
+        require(to != owner, "ERC721: approval to current owner");
+
+        require(
+            msg.sender == owner || isLendApprovedForAll(owner, msg.sender),
+            "ERC721: approve caller is not token owner or approved for all"
+        );
+
+        tokenLendApprovals[tokenId] = to;
+    }
+
+    function getLendApproved(uint256 tokenId)
+        public
+        view
+        virtual
+        override
+        returns (address)
+    {
+        require(ownerOf(tokenId) != address(0));
+
+        return tokenLendApprovals[tokenId];
+    }
+
+    function setLendApprovalForAll(address operator, bool approved) public {
+        require(msg.sender != operator, "ERC721: approve to caller");
+        operatorLendApprovals[msg.sender][operator] = approved;
+    }
+
+    function isLendApprovedForAll(address owner, address operator)
+        public
+        view
+        returns (bool)
+    {
+        return operatorLendApprovals[owner][operator];
     }
 }
