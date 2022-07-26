@@ -15,7 +15,9 @@ contract Agreement {
         uint256 interval;
         uint256 paidUpTo;
         uint256 expiry;
+        uint256 noticePeriod;
         bool borrowed;
+        bool inNoticePeriod;
     }
     mapping(uint256 => NFT) public agreementToNFT;
     mapping(uint256 => PARAMS) public agreementToParams;
@@ -25,8 +27,9 @@ contract Agreement {
         uint256 nftId,
         address contractAddress,
         uint256 rent,
-        uint256 intervalInDays,
-        uint256 validityInDays
+        uint256 interval,
+        uint256 validity,
+        uint256 noticePeriod
     ) public returns (uint256) {
         require(
             IERC721(contractAddress).supportsInterface(
@@ -38,11 +41,11 @@ contract Agreement {
         NFT memory nft = NFT(nftId, contractAddress);
         PARAMS memory params = PARAMS(
             rent,
-            // intervalInDays * 1 days,
-            intervalInDays,
+            interval,
             0,
-            // validityInDays * 1 days,
-            validityInDays,
+            validity,
+            noticePeriod,
+            false,
             false
         );
         agreementToNFT[counter] = nft;
@@ -73,7 +76,9 @@ contract Agreement {
         );
         PARAMS memory params = agreementToParams[agreementID];
         require(
-            params.borrowed && params.expiry > params.paidUpTo + params.interval
+            params.borrowed &&
+                !params.inNoticePeriod &&
+                params.expiry > params.paidUpTo + params.interval
         );
         require(msg.value >= params.rent);
         payable(IERC721(nft.contractAddress).ownerOf(nft.id)).transfer(
@@ -83,10 +88,14 @@ contract Agreement {
         agreementToParams[agreementID] = params;
     }
 
-    function returnBorrowed(uint256 agreementID) public payable {
+    function returnBorrowed(uint256 agreementID) public {
         NFT memory nft = agreementToNFT[agreementID];
         PARAMS memory params = agreementToParams[agreementID];
-        require(params.borrowed && params.paidUpTo < block.timestamp);
+        require(
+            params.borrowed &&
+                (params.paidUpTo < block.timestamp ||
+                    params.noticePeriod > block.timestamp)
+        );
         require(
             msg.sender == IERC721(nft.contractAddress).ownerOf(nft.id) ||
                 msg.sender ==
@@ -97,6 +106,37 @@ contract Agreement {
         delete agreementToParams[agreementID];
     }
 
-    // add change expiry to extend or reduce the agreement validity
-    // notice period
+    // extend or reduce the agreement validity
+    function changeExpiry(uint256 agreementId, int256 change)
+        public
+        returns (uint256)
+    {
+        NFT memory nft = agreementToNFT[agreementId];
+        require(msg.sender == IERC721(nft.contractAddress).ownerOf(nft.id));
+        PARAMS memory params = agreementToParams[agreementId];
+        int256 expiryInInt = int256(params.expiry) + change;
+        require(expiryInInt > int256(block.timestamp));
+        params.expiry = uint256(expiryInInt);
+        agreementToParams[agreementId] = params;
+        return params.expiry;
+    }
+
+    function initiateNoticePeriod(uint256 agreementId) public payable {
+        NFT memory nft = agreementToNFT[agreementId];
+        require(msg.sender == IERC721(nft.contractAddress).ownerOf(nft.id));
+        PARAMS memory params = agreementToParams[agreementId];
+        require(params.paidUpTo > block.timestamp);
+        uint256 rentPaid = ((params.paidUpTo - block.timestamp) /
+            params.interval) * params.rent;
+        require(
+            // DECISION: should the owner earn rent while in notice period?
+            msg.value >= rentPaid
+        );
+        payable(IERC721Lend(nft.contractAddress).borrowedBy(nft.id)).transfer(
+            rentPaid
+        );
+        params.noticePeriod = block.timestamp + params.noticePeriod;
+        params.inNoticePeriod = true;
+        agreementToParams[agreementId] = params;
+    }
 }
