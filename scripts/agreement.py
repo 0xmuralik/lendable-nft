@@ -81,6 +81,16 @@ def change_expiry(agreement_id, change, account):
     print(f"Expiry changed to {get_params(agreement_id)[3]}")
 
 
+def notice_period(agreement_id, amount, account):
+    """Initiate notice period"""
+    agreement = Agreement[-1]
+    notice_period_tx = agreement.initiateNoticePeriod(
+        agreement_id, {"from": account, "value": amount}
+    )
+    notice_period_tx.wait(1)
+    print(f"Started notice period for agreement {agreement_id}")
+
+
 def return_borrowed(agreement_id, account):
     """return borrowedNFT"""
     agreement = Agreement[-1]

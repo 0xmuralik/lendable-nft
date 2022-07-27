@@ -22,7 +22,7 @@ def test_can_make_agreeement():
     agreement.deploy()
     # agreement.approve_lend(token_id, owner)
     agreement.approve_lend_for_all(owner)
-    agreement_id = agreement.make_agreement(token_id, 0.1, 2, 15, 14, owner)
+    agreement_id = agreement.make_agreement(token_id, 0.1, 2, 15, 5, owner)
 
     assert agreement.get_nft(agreement_id) == (token_id, lend_contract.address)
     assert agreement.get_params(agreement_id) == (
@@ -30,7 +30,7 @@ def test_can_make_agreeement():
         2,
         0,
         15,
-        14,
+        5,
         False,
         False,
     )
@@ -95,6 +95,29 @@ def test_can_change_expiry():
         assert expiry_after - expiry_before == change
     else:
         assert expiry_before - expiry_after == change
+
+
+def test_can_start_notice_period():
+    """Test to start notice period"""
+    owner = utils.get_account(1)
+    agreement_id, lend_contract = test_can_borrow()
+    rent, interval, paid_up_to, _, _, _, _ = agreement.get_params(agreement_id)
+    amount = ((paid_up_to - int(time.time())) / interval) * rent
+    agreement.notice_period(agreement_id, int(amount), owner)
+    assert agreement.get_params(agreement_id)[6]
+    return agreement_id, lend_contract
+
+
+def test_can_return_after_notice_period():
+    """Test to return borrowed NFt after notice period"""
+    owner = utils.get_account(1)
+    agreement_id, lend_contract = test_can_start_notice_period()
+    nft = agreement.get_nft(agreement_id)
+    time.sleep(5)
+    agreement.return_borrowed(agreement_id, owner)
+
+    assert lend_contract.borrowedBy(nft[0]) == ZERO_ADDRESS
+    assert agreement.get_nft(agreement_id)[1] == ZERO_ADDRESS
 
 
 def test_can_return_borrowed():
