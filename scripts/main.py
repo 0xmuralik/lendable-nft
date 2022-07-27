@@ -39,7 +39,6 @@ def main():
     time.sleep(4)
 
     # return borrowed from agreement
-    # BUG: In lend return borrowed
     agreement.return_borrowed(agreement_id, owner)
 
     # release NFT

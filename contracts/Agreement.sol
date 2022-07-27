@@ -94,7 +94,8 @@ contract Agreement {
         require(
             params.borrowed &&
                 (params.paidUpTo < block.timestamp ||
-                    params.noticePeriod > block.timestamp)
+                    (params.inNoticePeriod &&
+                        params.noticePeriod > block.timestamp))
         );
         require(
             msg.sender == IERC721(nft.contractAddress).ownerOf(nft.id) ||

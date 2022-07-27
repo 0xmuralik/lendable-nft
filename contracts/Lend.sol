@@ -78,7 +78,6 @@ contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
     }
 
     function returnBorrowed(uint256 tokenId) public {
-        // BUG: owner can change approved to return borrowed NFT anytime
         require(
             tokenToBorrower[tokenId] == msg.sender ||
                 msg.sender == getLendApproved(tokenId)

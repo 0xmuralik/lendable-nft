@@ -2,10 +2,6 @@ from brownie import Lend, SimpleCollectible
 from scripts.utils import get_account, encode_function_signature, decode_to_int
 
 
-# def main():
-#     """Entry"""
-
-
 def deploy():
     """Deploy Lending contract"""
     account = get_account()
@@ -22,7 +18,6 @@ def approve(source_token_id, account):
         lend.address, source_token_id, {"from": account}
     )
     approve_tx.wait(1)
-    # use getApproved(tokenId) to test
     print(
         f"Token {source_token_id} approved for {simple_collectible.getApproved(source_token_id)}"
     )

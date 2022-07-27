@@ -73,6 +73,14 @@ def pay_rent(agreement_id, account):
     )
 
 
+def change_expiry(agreement_id, change, account):
+    """Change expiry of agreement"""
+    agreement = Agreement[-1]
+    change_expiry_tx = agreement.changeExpiry(agreement_id, change, {"from": account})
+    change_expiry_tx.wait(1)
+    print(f"Expiry changed to {get_params(agreement_id)[3]}")
+
+
 def return_borrowed(agreement_id, account):
     """return borrowedNFT"""
     agreement = Agreement[-1]

@@ -82,6 +82,21 @@ def test_can_pay_rent():
     return agreement_id, lend_contract
 
 
+def test_can_change_expiry():
+    """Test to change expiry"""
+    change = 100
+    owner = utils.get_account(1)
+    agreement_id, _ = test_can_borrow()
+    expiry_before = agreement.get_params(agreement_id)[3]
+    agreement.change_expiry(agreement_id, change, owner)
+    expiry_after = agreement.get_params(agreement_id)[3]
+
+    if change > 0:
+        assert expiry_after - expiry_before == change
+    else:
+        assert expiry_before - expiry_after == change
+
+
 def test_can_return_borrowed():
     """Test to return borrowed nft"""
     borrower = utils.get_account(2)
