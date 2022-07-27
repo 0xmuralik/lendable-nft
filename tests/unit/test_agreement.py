@@ -20,8 +20,9 @@ def test_can_make_agreeement():
 
     # make agreement
     agreement.deploy()
-    agreement.approve(token_id, owner)
-    agreement_id = agreement.make_agreement(token_id, 0.1, 2, 15, owner)
+    # agreement.approve_lend(token_id, owner)
+    agreement.approve_lend_for_all(owner)
+    agreement_id = agreement.make_agreement(token_id, 0.1, 2, 15, 14, owner)
 
     assert agreement.get_nft(agreement_id) == (token_id, lend_contract.address)
     assert agreement.get_params(agreement_id) == (
@@ -29,6 +30,8 @@ def test_can_make_agreeement():
         2,
         0,
         15,
+        14,
+        False,
         False,
     )
     return agreement_id, lend_contract
@@ -92,3 +95,12 @@ def test_can_return_borrowed():
 
     assert lend_contract.borrowedBy(nft[0]) == ZERO_ADDRESS
     assert agreement.get_nft(agreement_id)[1] == ZERO_ADDRESS
+
+
+def test_cant_change_lend_approval():
+    """Test to check that owner cant change lend approval once borrowed"""
+    owner = utils.get_account(1)
+    agreement_id, _ = test_can_borrow()
+    nft = agreement.get_nft(agreement_id)
+    with reverts():
+        agreement.approve_lend(nft[0], owner)

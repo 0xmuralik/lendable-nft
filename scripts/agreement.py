@@ -20,6 +20,15 @@ def approve_lend(token_id, account):
     print(f"Token {token_id} approved for {lend.getLendApproved(token_id)}")
 
 
+def approve_lend_for_all(account):
+    """Set lend approval lend for all"""
+    lend = Lend[-1]
+    agreement = Agreement[-1]
+    approve_tx = lend.setLendApprovalForAll(agreement.address, True, {"from": account})
+    approve_tx.wait(1)
+    print(f"Owner {account.address} approved for {agreement.address}")
+
+
 def make_agreement(token_id, rent_in_eth, interval, validity, notice_period, account):
     """make a new agreement for token lending"""
     agreement = Agreement[-1]
