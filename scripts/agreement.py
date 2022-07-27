@@ -11,21 +11,27 @@ def deploy():
     return agreement
 
 
-def approve(token_id, account):
+def approve_lend(token_id, account):
     """Approve agreement contract to use lendable NFT"""
     lend = Lend[-1]
     agreement = Agreement[-1]
-    approve_tx = lend.approve(agreement.address, token_id, {"from": account})
+    approve_tx = lend.approveLend(agreement.address, token_id, {"from": account})
     approve_tx.wait(1)
-    print(f"Token {token_id} approved for {lend.getApproved(token_id)}")
+    print(f"Token {token_id} approved for {lend.getLendApproved(token_id)}")
 
 
-def make_agreement(token_id, rent_in_eth, interval, validity, account):
+def make_agreement(token_id, rent_in_eth, interval, validity, notice_period, account):
     """make a new agreement for token lending"""
     agreement = Agreement[-1]
     rent = Web3.toWei(rent_in_eth, "ether")
     make_agreement_tx = agreement.makeAgreement(
-        token_id, Lend[-1].address, rent, interval, validity, {"from": account}
+        token_id,
+        Lend[-1].address,
+        rent,
+        interval,
+        validity,
+        notice_period,
+        {"from": account},
     )
     make_agreement_tx.wait(1)
     agreement_id = make_agreement_tx.return_value

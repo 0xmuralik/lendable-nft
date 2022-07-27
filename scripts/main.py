@@ -23,8 +23,8 @@ def main():
 
     # make agreement
     agreement.deploy()
-    agreement.approve(token_id, owner)
-    agreement_id = agreement.make_agreement(token_id, 0.1, 2, 30, owner)
+    agreement.approve_lend(token_id, owner)
+    agreement_id = agreement.make_agreement(token_id, 0.1, 2, 30, 14, owner)
 
     # borrow from agreement
     agreement.borrow(agreement_id, borrower)

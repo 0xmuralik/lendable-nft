@@ -138,6 +138,7 @@ contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
 
     function approveLend(address to, uint256 tokenId) public {
         address owner = ERC721.ownerOf(tokenId);
+        require(borrowedBy(tokenId) == address(0));
         require(to != owner, "ERC721: approval to current owner");
 
         require(
