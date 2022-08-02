@@ -36,20 +36,29 @@ contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
         );
         // mint new token as owner as msg.sender
         _safeMint(msg.sender, tokenCounter);
+        tokenIdToSourceTokenId[tokenCounter] = sourceTokenId;
+        tokenToContract[tokenCounter] = nftContract;
+        tokenCounter = tokenCounter + 1;
+        return tokenCounter - 1;
+    }
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
+        require(_exists(tokenId));
+        address nftContract = tokenToContract[tokenId];
+        uint256 sourceTokenId = tokenIdToSourceTokenId[tokenId];
         if (
             IERC721(nftContract).supportsInterface(
                 type(IERC721Metadata).interfaceId
             )
         ) {
-            _setTokenURI(
-                tokenCounter,
-                IERC721Metadata(nftContract).tokenURI(sourceTokenId)
-            );
+            return IERC721Metadata(nftContract).tokenURI(sourceTokenId);
         }
-        tokenIdToSourceTokenId[tokenCounter] = sourceTokenId;
-        tokenToContract[tokenCounter] = nftContract;
-        tokenCounter = tokenCounter + 1;
-        return tokenCounter - 1;
+        return "";
     }
 
     function releaseNFT(uint256 tokenId) public {
