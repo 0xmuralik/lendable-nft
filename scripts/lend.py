@@ -103,7 +103,15 @@ def get_token_data(token_id):
     """Prints all the data regarding that token"""
     lend = Lend[-1]
     print(f"Token ID: {token_id}")
-    print(f"Token source id: {lend.tokenIdToSourceTokenId(token_id)}")
-    print(f"Token source contract: {lend.tokenToContract(token_id)}")
+    print(lend.getSourceNFT(token_id))
+    # source_token = lend.getSourceNFT(token_id).returnValue
+    # print(f"Token source id: {source_token[0]}")
+    # print(f"Token source contract: {source_token[1]}")
     print(f"Token owner: {lend.ownerOf(token_id)}")
     print(f"Token borowwer: {lend.tokenToBorrower(token_id)}")
+
+
+def get_source_nft(token_id):
+    """Get source nft"""
+    lend = Lend[-1]
+    return lend.getSourceNFT(token_id)

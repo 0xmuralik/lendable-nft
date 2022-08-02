@@ -9,10 +9,13 @@ import "../interfaces/IERC721Lend.sol";
 import "../interfaces/IERC721LendWrap.sol";
 
 contract Lend is ERC721URIStorage, IERC721LendWrap {
+    struct NFT {
+        uint256 id;
+        address contractAddress;
+    }
     uint256 public tokenCounter;
     mapping(uint256 => address) public tokenToBorrower;
-    mapping(uint256 => address) public tokenToContract;
-    mapping(uint256 => uint256) public tokenIdToSourceTokenId;
+    mapping(uint256 => NFT) tokenIdToNFT;
 
     mapping(uint256 => address) private tokenLendApprovals;
     mapping(address => mapping(address => bool)) private operatorLendApprovals;
@@ -36,8 +39,7 @@ contract Lend is ERC721URIStorage, IERC721LendWrap {
         );
         // mint new token as owner as msg.sender
         _safeMint(msg.sender, tokenCounter);
-        tokenIdToSourceTokenId[tokenCounter] = sourceTokenId;
-        tokenToContract[tokenCounter] = nftContract;
+        tokenIdToNFT[tokenCounter] = NFT(sourceTokenId, nftContract);
         tokenCounter = tokenCounter + 1;
         return tokenCounter - 1;
     }
@@ -49,14 +51,13 @@ contract Lend is ERC721URIStorage, IERC721LendWrap {
         returns (string memory)
     {
         require(_exists(tokenId));
-        address nftContract = tokenToContract[tokenId];
-        uint256 sourceTokenId = tokenIdToSourceTokenId[tokenId];
+        NFT memory nft = tokenIdToNFT[tokenId];
         if (
-            IERC721(nftContract).supportsInterface(
+            IERC721(nft.contractAddress).supportsInterface(
                 type(IERC721Metadata).interfaceId
             )
         ) {
-            return IERC721Metadata(nftContract).tokenURI(sourceTokenId);
+            return IERC721Metadata(nft.contractAddress).tokenURI(nft.id);
         }
         return "";
     }
@@ -66,11 +67,14 @@ contract Lend is ERC721URIStorage, IERC721LendWrap {
             ownerOf(tokenId) == msg.sender &&
                 tokenToBorrower[tokenId] == address(0)
         );
-        IERC721(tokenToContract[tokenId]).safeTransferFrom(
+
+        NFT memory nft = tokenIdToNFT[tokenId];
+        IERC721(nft.contractAddress).safeTransferFrom(
             address(this),
             msg.sender,
-            tokenIdToSourceTokenId[tokenId]
+            nft.id
         );
+        delete tokenIdToNFT[tokenId];
         _burn(tokenId);
     }
 
@@ -116,7 +120,8 @@ contract Lend is ERC721URIStorage, IERC721LendWrap {
         } else {
             require(msg.sender == ownerOf(tokenId));
         }
-        (bool success, bytes memory result) = tokenToContract[tokenId].call(
+        NFT memory nft = tokenIdToNFT[tokenId];
+        (bool success, bytes memory result) = nft.contractAddress.call(
             signature
         );
         require(success);
@@ -180,5 +185,10 @@ contract Lend is ERC721URIStorage, IERC721LendWrap {
         returns (bool)
     {
         return operatorLendApprovals[owner][operator];
+    }
+
+    function getSourceNFT(uint256 tokenId) public view returns (NFT memory) {
+        require(_exists(tokenId));
+        return tokenIdToNFT[tokenId];
     }
 }

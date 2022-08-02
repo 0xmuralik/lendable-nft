@@ -31,16 +31,15 @@ def test_can_call_on_borrowed():
         lend_contract,
         lended_token_id,
     ) = test_can_borrow()
+    nft = lend_contract.getSourceNFT(lended_token_id)
     signature = utils.encode_function_signature(
         "setPower(uint256,uint256)",
-        lend_contract.tokenIdToSourceTokenId(lended_token_id),
+        nft[0],
         100,
     )
     result = lend.call_on_nft(lended_token_id, signature, utils.get_account(1))
     assert result is not None
-    signature = utils.encode_function_signature(
-        "powers(uint256)", lend_contract.tokenIdToSourceTokenId(lended_token_id)
-    )
+    signature = utils.encode_function_signature("powers(uint256)", nft[0])
     result = lend.call_on_nft(lended_token_id, signature, utils.get_account(1))
     assert utils.decode_to_int(result[1:]) == 100
     return lend_contract, lended_token_id
@@ -63,12 +62,12 @@ def test_can_release():
         lend_contract,
         lended_token_id,
     ) = test_can_return()
-    nft_contract = lend_contract.tokenToContract(lended_token_id)
-    source_token_id = lend_contract.tokenIdToSourceTokenId(lended_token_id)
+    nft = lend_contract.getSourceNFT(lended_token_id)
+
     lend.release_nft(lended_token_id, utils.get_account())
     with reverts("ERC721: owner query for nonexistent token"):
         lend_contract.ownerOf(lended_token_id)
     simple_collectible_contract = Contract.from_abi(
-        "SimpleCollectible", nft_contract, SimpleCollectible.abi
+        "SimpleCollectible", nft[1], SimpleCollectible.abi
     )
-    assert simple_collectible_contract.ownerOf(source_token_id) == utils.get_account()
+    assert simple_collectible_contract.ownerOf(nft[0]) == utils.get_account()
