@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../interfaces/IERC721Lend.sol";
+import "../interfaces/IERC721LendWrap.sol";
 
-contract Lend is IERC721Receiver, ERC721URIStorage, IERC721Lend {
+contract Lend is ERC721URIStorage, IERC721LendWrap {
     uint256 public tokenCounter;
     mapping(uint256 => address) public tokenToBorrower;
     mapping(uint256 => address) public tokenToContract;
