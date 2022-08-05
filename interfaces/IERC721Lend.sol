@@ -3,6 +3,7 @@
 pragma solidity >0.8.0;
 
 interface IERC721Lend {
+    // TODO: ADD events
     function borrow(uint256 tokenId, address borrower) external;
 
     function returnBorrowed(uint256 tokenId) external;

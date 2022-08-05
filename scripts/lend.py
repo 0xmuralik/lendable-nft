@@ -31,9 +31,9 @@ def make_token_lendable(source_token_id, account):
     )
     make_lendable_tx.wait(1)
     print(
-        f"Token {source_token_id} made lendable. New token id is {make_lendable_tx.return_value} with owner as {account.address}"
+        f"Token {source_token_id} made lendable. New token id is {lend.tokenCounter()-1} with owner as {account.address}"
     )
-    return make_lendable_tx.return_value
+    return lend.tokenCounter() - 1
 
 
 def borrow(token_id, account):
@@ -44,6 +44,7 @@ def borrow(token_id, account):
     print(f"Token {token_id} borrowed by {account.address}")
 
 
+# TODO: find a way to return call_tx.return_value
 def call_on_nft_powers(token_id, account):
     """call powers function on NFT source contract"""
     lend = Lend[-1]
@@ -51,18 +52,21 @@ def call_on_nft_powers(token_id, account):
     signature = encode_function_signature("setPower(uint256,uint256)", 0, 100)
     call_tx = lend.callOnNFT(token_id, signature, {"from": account})
     call_tx.wait(1)
-    success, result = call_tx.return_value
-    if not success:
-        print("Call on nft source failed!!!!!!!!!!!!!!")
+    # success, result = call_tx.return_value
+    # if not success:
+    #     print("Call on nft source failed!!!!!!!!!!!!!!")
+    print(f"CALL DATA: {call_tx}")
 
     # get power
     signature = encode_function_signature("powers(uint256)", 0)
     call_tx = lend.callOnNFT(token_id, signature, {"from": account})
     call_tx.wait(1)
-    success, result = call_tx.return_value
-    if not success:
-        print("Call on nft source failed!!!!!!!!!!!!!!")
-    return decode_to_int(result[1:])
+    # success, result = call_tx.return_value
+    # if not success:
+    #     print("Call on nft source failed!!!!!!!!!!!!!!")
+    # return decode_to_int(result[1:])
+    print(f"CALL DATA: {call_tx}")
+    return call_tx
     # return result
 
 
@@ -71,11 +75,12 @@ def call_on_nft(token_id, signature, account):
     lend = Lend[-1]
     call_tx = lend.callOnNFT(token_id, signature, {"from": account})
     call_tx.wait(1)
-    success, result = call_tx.return_value
-    if not success:
-        print("Call on nft source failed!!!!!!!!!!!!!!")
-        return None
-    return result
+    # success, result = call_tx.return_value
+    # if not success:
+    #     print("Call on nft source failed!!!!!!!!!!!!!!")
+    #     return None
+    # return result
+    return call_tx
 
 
 def return_borrowed(token_id, account):

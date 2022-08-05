@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../interfaces/IERC721Lend.sol";
 
 contract Agreement {
+    // TODO: modifiers
+    // TODO: getters
     struct NFT {
         uint256 id;
         address contractAddress;

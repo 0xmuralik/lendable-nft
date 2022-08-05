@@ -4,3 +4,8 @@ compiler:
   solc:
     remappings:
     - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.6.0'
+dotenv: .env
+wallets:
+  alice: ${ALICE_KEY}
+  bob: ${BOB_KEY}
+  cat: ${CAT_KEY}

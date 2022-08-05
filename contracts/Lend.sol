@@ -9,6 +9,8 @@ import "../interfaces/IERC721Lend.sol";
 import "../interfaces/IERC721LendWrap.sol";
 
 contract Lend is ERC721URIStorage, IERC721LendWrap {
+    // modifiers
+    // getters
     struct NFT {
         uint256 id;
         address contractAddress;

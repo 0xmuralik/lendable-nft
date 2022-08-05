@@ -1,21 +1,36 @@
-from brownie import accounts, network, config, Contract, web3
+from brownie import (
+    accounts,
+    network,
+    config,
+    Contract,
+    web3,
+    SimpleCollectible,
+    Lend,
+    Agreement,
+)
 
 LOCAL_BLOCKCHAIN_ENVIRONMENTS = ["development", "ganache"]
 OPENSEA_URL = "https://testnets.opensea.io/assets/{}/{}"
 
+account_names = ["alice", "bob", "cat"]
 
-def get_account(index=None, id=None):
+
+def get_account(index=None):
     """Fetch account"""
-    if index:
-        return accounts[index]
     if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        if index:
+            return accounts[index]
         return accounts[0]
-    if id:
-        return accounts.load(id)
-    return accounts.add(config["wallets"]["from_key"])
+    if index:
+        return accounts.add(config["wallets"][account_names[index]])
+    return accounts.add(config["wallets"]["alice"])
 
 
-contract_to_mock = {}
+contract_to_mock = {
+    "nft": SimpleCollectible,
+    "lend": Lend,
+    "agreement": Agreement,
+}
 
 
 def get_contract(contract_name):

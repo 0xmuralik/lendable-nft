@@ -30,11 +30,11 @@ def create(account):
     create_tx.wait(1)
     if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
         print(
-            f"You can view your nft at {OPENSEA_URL.format(simple_collectible.address,create_tx.return_value)}"
+            f"You can view your nft at {OPENSEA_URL.format(simple_collectible.address,simple_collectible.tokenCounter()-1)}"
         )
     else:
         print("NFT is deployed")
-    return create_tx.return_value
+    return simple_collectible.tokenCounter() - 1
 
 
 def set_power(token_id, power):

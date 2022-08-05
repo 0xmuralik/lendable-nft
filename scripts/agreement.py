@@ -43,7 +43,7 @@ def make_agreement(token_id, rent_in_eth, interval, validity, notice_period, acc
         {"from": account},
     )
     make_agreement_tx.wait(1)
-    agreement_id = make_agreement_tx.return_value
+    agreement_id = agreement.counter() - 1
     print(f"New agreement id {agreement_id}")
     print(
         f"Agreement for nft {agreement.agreementToNFT(agreement_id)} with params {agreement.agreementToParams(agreement_id)}"
