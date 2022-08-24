@@ -11,6 +11,7 @@ def main():
 
     # mint NFT
     simple_collectible.deploy()
+
     source_token_id = simple_collectible.create(owner)
 
     # make nft lendable
